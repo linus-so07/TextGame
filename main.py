@@ -10,17 +10,22 @@ inventory = {
 
 
 # classes
-class Items:
+class Weapons:
+    def __init__(self, damage=0, break_chance=0):
+        self.init_damage = damage
+        self.init_break_chance = break_chance
 
-    class Stick:
-        damage = 20
-        break_chance = 25
+    def hit(self, ):
+
+
+
 
 
 class EnemyContainer:
 
-    class Thing:
+    class Goblin:
         damage = random.randint(1, 40)
+
 
 class Room:
 
@@ -69,7 +74,7 @@ class Room:
     class Boss:
         move_options = []
         enemy_chance = 100
-        enemies = [EnemyContainer.Thing]
+        enemies = [EnemyContainer.Goblin]
 
         loot_chance = 100
         dialogues = [
