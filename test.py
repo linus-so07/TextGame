@@ -139,7 +139,6 @@ class BossBattle(Battle):
 		super().__init__(boss=True)
 
 
-
 class Game:
 	def __init__(self):
 		self.pickup_weapon()
