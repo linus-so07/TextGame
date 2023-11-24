@@ -35,7 +35,7 @@ class Player:
             try:
                 self.break_weapon(inventory["Weapon"])
             except KeyError:
-                 1 + 1
+                return
 
     def get_hit(self, damage):
         self.health -= damage
