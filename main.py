@@ -1,158 +1,104 @@
+from Master import main
 import random
-import json
-open("saveStore", "r+")
-running = True
-previous_room = None
-coordinates = [0, 0, 0]
-inventory = {
-
-}
+from Master import coordinates
+# # (0, 0, 0): Room.Spawn,
 
 
-# classes
-class Items:
-
-    class Stick:
-        damage = 20
-        break_chance = 25
+# # This creates a file to use as a Map files
+def create_file():
+    with open('GameMapCords.txt', 'w') as file:
+        file.write("Hello World\n")
 
 
-class EnemyContainer:
-
-    class Thing:
-        damage = random.randint(1, 40)
-
-class Room:
-
-    class Spawn:
-        move_options = ["NORTH"]
-        enemy_chance = 0
-        loot_chance = 0
-        dialogues = [
-            "Welcome",
-            "Hello"
-        ]
-
-    class Crossroad:
-        move_options = ["NORTH", "SOUTH", "EAST", "WEST"]
-        enemy_chance = 15
-        loot_chance = 15
-        dialogues = [
-            "You find yourself in a 4-way corridor",
-            "w"
-        ]
-
-    class ChestDeadEnd:
-        move_options = previous_room
-        enemy_chance = 0
-        loot_chance = 100
-        dialogues = [
-            "You find an empty room with a chest"
-        ]
-
-    class NSHallway:
-        move_options = ["NORTH", "SOUTH"]
-        enemy_chance = 15
-        loot_chance = 5
-        dialogues = [
-            "You are in a hallway."
-        ]
-
-    class EWHallway:
-        move_options = ["EAST", "WEST"]
-        enemy_chance = 15
-        loot_chance = 5
-        dialogues = [
-            "You are in a hallway."
-        ]
-
-    class Boss:
-        move_options = []
-        enemy_chance = 100
-        enemies = [EnemyContainer.Thing]
-
-        loot_chance = 100
-        dialogues = [
-            "big boss"
-        ]
-# map
-# noinspection PyDictCreation
-game_map = {
-    (0, 0, 0): Room.Spawn,
-    (0, 1, 0): Room.Crossroad,
-    (1, 1, 0): Room.Crossroad,
-    (0, 2, 0): Room.Boss
-}
+# # This adds a string to the file that I created
+def append_file(text):
+    with open("GameMapCords.txt", "a") as file:
+        file.write(text)
 
 
-# eughhguh huughhh guhh hguuhhghh
-def enter_room():
-    new_room = game_map[tuple(coordinates)]
-    return new_room
+# # This clears everything in the file
+def clear_file():
+    with open("GameMapCords.txt", "w"):
+        pass
 
 
-# var
-current_room = enter_room()
+# # This reads the content of the file and returns it
+def read_file():
+    try:
+        with open("GameMapCords.txt", "r")as file:
+            content = file.read()
+            # #print(content)
+    except FileNotFoundError:
+        print("File could not be found")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    return content
 
 
-# true or false for enemy or loot, returns true or false (e or l spawns)
-def roll(enemy, loot):
-    e_chance = current_room.enemy_chance
-    l_chance = current_room.loot_chance
-    rolled = random.randint(0, 100)
-    if enemy:
-        if e_chance > rolled:
-            return True
-        else:
-            return False
-    elif loot:
-        if l_chance > rolled:
-            return True
-        else:
-            return False
+# # This generates rooms to be used in the file
+def generate_map():
+    map_coordinates_list = []
+
+    for _ in range(random.randint(2, 6)):
+        map_coordinates = [0, 0, 0]
+
+        i = random.randint(1, 4)
+        if i == 1:
+            map_coordinates[0] += 1
+        elif i == 2:
+            map_coordinates[0] -= 1
+        elif i == 3:
+            map_coordinates[1] += 1
+        elif i == 4:
+            map_coordinates[1] -= 1
+
+        map_coordinates_list.append(map_coordinates)
+
+    new_list = [[0, 0, 0]] + map_coordinates_list
+    return new_list
 
 
-# creates list of move options in current room
-def move_choice_list():
-    listed = ""
-    for i in current_room.move_options:
-        listed += str(current_room.move_options.index(i) + 1) + ": " + str(i) + "\n"
-    return listed
+# # This removes any duplicates in the generation
+def remove_duplicates(original_list):
+    unique_list = []
+    for coordinate in original_list:
+        if coordinate not in unique_list:
+            unique_list.append(coordinate)
+    return unique_list
 
 
-def move(mchoice):
-    global previous_room
-    mchoice = mchoice.upper()
-    if mchoice in current_room.move_options:
-        previous_room = enter_room()
-        if mchoice == "NORTH":
-            coordinates[1] += 1
-        elif mchoice == "SOUTH":
-            coordinates[1] += -1
-        elif mchoice == "EAST":
-            coordinates[0] += -1
-        elif mchoice == "WEST":
-            coordinates[0] += 1
-        elif mchoice == "DOWN":
-            coordinates[2] += -1
-        elif mchoice == "UP":
-            coordinates[2] += 1
-        else:
-            print("Invalid Direction! Type the direction you want to move in")
+# # This adds the identification to the room EG: [0, 0, 0,] -> ([0, 0, 0]: Room.Spawn)
+def add_room(gen_coordinates):
+    if gen_coordinates == [0, 0, 0]:
+        new_tuple = (tuple(gen_coordinates), "Room.Spawn")
+    else:
+        new_tuple = (tuple(gen_coordinates), "Room.Crossroad")
+
+    formatted_result = f"[{[new_tuple][0][0]}: {[new_tuple][0][1]}]"
+    return formatted_result
 
 
-def main():
-    global current_room
-    global previous_room
-    global coordinates
-    while True:
-        chosen_dialogue = random.choice(current_room.dialogues)
-        print(chosen_dialogue)
-        print(move_choice_list())
-        chosen_move = input("Select direction to move:\n")
-        move(chosen_move)
-
-        current_room = enter_room()
+# # This adds everything generated to the textfile
+def add_to_text_file():
+    gen_lis = remove_duplicates(generate_map())
+    for x in range(len(gen_lis)):
+        append_file(add_room(gen_lis[x]))
+        if x < len(gen_lis) - 1:
+            append_file("\n")
+        elif x > len(gen_lis):
+            clear_file()
 
 
-main()
+# # This processes the file form one big string to a list
+def process_file():
+    file = read_file()
+    coords = file.split("\n")
+    return coords
+
+
+clear_file()
+add_to_text_file()
+
+process = process_file()
+# #print(process[1])
+# #main()
